@@ -7041,8 +7041,16 @@ out:
 
 static bool ufshcd_wb_sup(struct ufs_hba *hba)
 {
-	return !!(hba->dev_info.d_ext_ufs_feature_sup &
-		  UFS_DEV_WRITE_BOOSTER_SUP);
+#if defined(CONFIG_UFSTW_31)
+	if (IS_SAMSUNG_DEVICE(storage_mfrid))
+		return false;
+	else
+		return (hba->dev_info.d_ext_ufs_feature_sup &
+			UFS_DEV_WRITE_BOOSTER_SUP);
+#else
+	return (hba->dev_info.d_ext_ufs_feature_sup &
+		UFS_DEV_WRITE_BOOSTER_SUP);
+#endif
 }
 
 static int ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable)
@@ -8608,6 +8616,7 @@ static int ufs_get_device_desc(struct ufs_hba *hba,
 {
 	int err;
 	size_t buff_len;
+	u8 model_index;
 	u8 *desc_buf;
 
 	buff_len = max_t(size_t, hba->desc_size.dev_desc,
